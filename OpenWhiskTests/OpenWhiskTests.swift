@@ -17,16 +17,16 @@
 import XCTest
 import OpenWhisk
 
-class NetworkUtilsDelegate: NSObject, NSURLSessionDelegate {
-    func URLSession(session: NSURLSession, didReceiveChallenge challenge: NSURLAuthenticationChallenge, completionHandler: (NSURLSessionAuthChallengeDisposition, NSURLCredential?) -> Void) {
+class NetworkUtilsDelegate: NSObject, URLSessionDelegate {
+    func urlSession(_ session: URLSession, didReceive challenge: URLAuthenticationChallenge, completionHandler: (Foundation.URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
         
-        completionHandler(NSURLSessionAuthChallengeDisposition.UseCredential, NSURLCredential(forTrust: challenge.protectionSpace.serverTrust!))
+        completionHandler(Foundation.URLSession.AuthChallengeDisposition.useCredential, URLCredential(trust: challenge.protectionSpace.serverTrust!))
     }
 }
 
 class OpenWhiskTests: XCTestCase {
     
-    let Timeout:NSTimeInterval = 100 // time to wait for whisk action to complete
+    let Timeout:TimeInterval = 100 // time to wait for whisk action to complete
     
     var apiKey: String?
     var apiSecret: String?
@@ -52,21 +52,22 @@ class OpenWhiskTests: XCTestCase {
         
         if let apiKey = apiKey, apiSecret = apiSecret {
             // allow for self-signed certificates
-            let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: NetworkUtilsDelegate(), delegateQueue:NSOperationQueue.mainQueue())
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkUtilsDelegate(), delegateQueue:OperationQueue.main)
             
             let credentials = WhiskCredentials(accessKey: apiKey, accessToken: apiSecret)
             let whisk = Whisk(credentials: credentials)
             whisk.urlSession = session
+            whisk.baseURL = "https://openwhisk.ng.bluemix.net"
             
             // setup for async testing
-            let expectation = expectationWithDescription("Whisk Callback")
+            let expectation = self.expectation(withDescription: "Whisk Callback")
             
             do {
                 try whisk.invokeAction(name: "date", package: "util", namespace: "whisk.system", parameters: nil, hasResult: true,
                     callback: {(reply, error) in
                         
                         if let error = error {
-                            if case let WhiskError.HTTPError(description, statusCode) = error {
+                            if case let WhiskError.httpError(description, statusCode) = error {
                                 
                                 print("Error: \(description) statusCode: \(statusCode))")
                                 
@@ -94,7 +95,7 @@ class OpenWhiskTests: XCTestCase {
                 XCTFail("Error invoking action \(error)")
             }
             
-            waitForExpectationsWithTimeout(Timeout, handler: { error in
+            waitForExpectations(withTimeout: Timeout, handler: { error in
                 
                 if let error = error {
                     print("Error: \(error)")
@@ -109,18 +110,19 @@ class OpenWhiskTests: XCTestCase {
         
         if let apiKey = apiKey, apiSecret = apiSecret {
             // setup for async testing
-            let expectation = expectationWithDescription("Whisk Callback")
+            let expectation = self.expectation(withDescription: "Whisk Callback")
             // allow for self-signed certificates
-            let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: NetworkUtilsDelegate(), delegateQueue:NSOperationQueue.mainQueue())
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkUtilsDelegate(), delegateQueue:OperationQueue.main)
             
             let credentials = WhiskCredentials(accessKey: apiKey, accessToken: apiSecret)
             let whisk = Whisk(credentials: credentials)
+            whisk.baseURL = "https://openwhisk.ng.bluemix.net"
             whisk.urlSession = session
             do {
                 try whisk.invokeAction(qualifiedName: "/whisk.system/util/date", parameters: nil, hasResult: true, callback: {(reply, error) in
                     
                     if let error = error {
-                        if case let WhiskError.HTTPError(description, statusCode) = error {
+                        if case let WhiskError.httpError(description, statusCode) = error {
                             
                             print("Error: \(description) statusCode: \(statusCode))")
                             
@@ -148,7 +150,7 @@ class OpenWhiskTests: XCTestCase {
                 XCTFail("Error invoking action \(error)")
             }
             
-            waitForExpectationsWithTimeout(Timeout, handler: { error in
+            waitForExpectations(withTimeout: Timeout, handler: { error in
                 
                 if let error = error {
                     print("Error: \(error)")
@@ -163,10 +165,10 @@ class OpenWhiskTests: XCTestCase {
         
         if let apiKey = apiKey, apiSecret = apiSecret {
             // setup for async testing
-            let expectation = expectationWithDescription("Whisk Callback")
+            let expectation = self.expectation(withDescription: "Whisk Callback")
             
             // allow for self-signed certificates
-            let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: NetworkUtilsDelegate(), delegateQueue:NSOperationQueue.mainQueue())
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkUtilsDelegate(), delegateQueue:OperationQueue.main)
             
             let credentials = WhiskCredentials(accessKey: apiKey, accessToken: apiSecret)
             let whisk = Whisk(credentials: credentials)
@@ -178,7 +180,7 @@ class OpenWhiskTests: XCTestCase {
                 try whisk.invokeAction(qualifiedName: "/whisk.system/util/date", parameters: nil, hasResult: true, callback: {(reply, error) in
                     
                     if let error = error {
-                        if case let WhiskError.HTTPError(description, statusCode) = error {
+                        if case let WhiskError.httpError(description, statusCode) = error {
                             
                             print("Error: \(description) statusCode: \(statusCode))")
                             
@@ -206,7 +208,7 @@ class OpenWhiskTests: XCTestCase {
                 XCTFail("Error invoking action \(error)")
             }
             
-            waitForExpectationsWithTimeout(Timeout, handler: { error in
+            waitForExpectations(withTimeout: Timeout, handler: { error in
                 
                 if let error = error {
                     print("Error: \(error)")
@@ -222,10 +224,10 @@ class OpenWhiskTests: XCTestCase {
         
         if let apiKey = apiKey, apiSecret = apiSecret {
             // setup for async testing
-            let expectation = expectationWithDescription("Whisk Callback")
+            let expectation = self.expectation(withDescription: "Whisk Callback")
             
             // allow for self-signed certificates
-            let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: NetworkUtilsDelegate(), delegateQueue:NSOperationQueue.mainQueue())
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkUtilsDelegate(), delegateQueue:OperationQueue.main)
             
             let credentials = WhiskCredentials(accessKey: apiKey, accessToken: apiSecret)
             let whisk = Whisk(credentials: credentials)
@@ -238,7 +240,7 @@ class OpenWhiskTests: XCTestCase {
                 try whisk.invokeAction(qualifiedName: "/whisk.system/util/date", parameters: nil, hasResult: true, callback: {(reply, error) in
                     
                     if let error = error {
-                        if case let WhiskError.HTTPError(description, statusCode) = error {
+                        if case let WhiskError.httpError(description, statusCode) = error {
                             
                             print("Error: \(description) statusCode: \(statusCode))")
                             
@@ -266,7 +268,7 @@ class OpenWhiskTests: XCTestCase {
                 XCTFail("Error invoking action \(error)")
             }
             
-            waitForExpectationsWithTimeout(Timeout, handler: { error in
+            waitForExpectations(withTimeout: Timeout, handler: { error in
                 
                 if let error = error {
                     print("Error: \(error)")
@@ -282,10 +284,10 @@ class OpenWhiskTests: XCTestCase {
         
         if let apiKey = apiKey, apiSecret = apiSecret {
             // setup for async testing
-            let expectation = expectationWithDescription("Whisk Callback")
+            let expectation = self.expectation(withDescription: "Whisk Callback")
             
             // allow for self-signed certificates
-            let session = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration(), delegate: NetworkUtilsDelegate(), delegateQueue:NSOperationQueue.mainQueue())
+            let session = URLSession(configuration: URLSessionConfiguration.default, delegate: NetworkUtilsDelegate(), delegateQueue:OperationQueue.main)
             
             let credentials = WhiskCredentials(accessKey: apiKey, accessToken: apiSecret)
             let whisk = Whisk(credentials: credentials)
@@ -312,7 +314,7 @@ class OpenWhiskTests: XCTestCase {
                 XCTFail("Error invoking trigger \(error)")
             }
             
-            waitForExpectationsWithTimeout(Timeout, handler: { error in
+            waitForExpectations(withTimeout: Timeout, handler: { error in
                 
                 if let error = error {
                     print("Error: \(error)")
